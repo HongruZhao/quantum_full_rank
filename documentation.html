@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Quantum State Tomography: Mathematical Documentation</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #fafafa;
+            --text-color: #333;
+            --code-bg: #f4f4f4;
+            --border-color: #ddd;
+            --accent: #2563eb;
+            --accent-light: #dbeafe;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+        h1 {
+            color: var(--accent);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            color: var(--accent);
+            margin-top: 2.5rem;
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+        }
+        h3 {
+            color: #1e40af;
+            margin-top: 1.5rem;
+        }
+        .definition, .theorem, .remark, .algorithm {
+            border-left: 4px solid;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .definition { border-color: #059669; }
+        .definition::before { content: "Definition. "; font-weight: bold; color: #059669; }
+        .theorem { border-color: #dc2626; }
+        .theorem::before { content: "Key Result. "; font-weight: bold; color: #dc2626; }
+        .remark { border-color: #f59e0b; }
+        .remark::before { content: "Remark. "; font-weight: bold; color: #f59e0b; }
+        .algorithm { border-color: #7c3aed; }
+        .algorithm::before { content: "Algorithm. "; font-weight: bold; color: #7c3aed; }
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th { background: var(--accent-light); }
+        .toc {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .toc ul { padding-left: 1.5rem; }
+        .toc a { text-decoration: none; color: var(--accent); }
+        .toc a:hover { text-decoration: underline; }
+        .file-ref {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: monospace;
+        }
+        .equation-box {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Adaptive Quantum State Tomography</h1>
+<p><strong>Mathematical Documentation for the R Codebase</strong></p>
+<p><em>This document provides precise mathematical definitions, notation, and key results for all computations implemented in the codebase.</em></p>
+
+<nav class="toc">
+    <h3>Table of Contents</h3>
+    <ul>
+        <li><a href="#sec-overview">1. Overview &amp; Code Structure</a></li>
+        <li><a href="#sec-quantum">2. Quantum Mechanical Background</a></li>
+        <li><a href="#sec-bloch">3. Bloch Vector Parametrization</a></li>
+        <li><a href="#sec-measurements">4. Measurements &amp; Born Probabilities</a></li>
+        <li><a href="#sec-mle">5. Maximum Likelihood Estimation</a></li>
+        <li><a href="#sec-fisher">6. Fisher Information</a></li>
+        <li><a href="#sec-design">7. Adaptive Experimental Design</a></li>
+        <li><a href="#sec-metrics">8. Loss Functions &amp; Metrics</a></li>
+        <li><a href="#sec-libraries">9. Measurement Libraries</a></li>
+        <li><a href="#sec-simulation">10. Simulation Framework</a></li>
+        <li><a href="#sec-functions">11. Function Reference</a></li>
+    </ul>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="sec-overview">1. Overview &amp; Code Structure</h2>
+
+<p>This codebase implements <strong>adaptive quantum state tomography</strong> for a single qubit (\(N=2\) dimensional Hilbert space). The goal is to estimate an unknown quantum state \(\rho\) by performing sequential measurements and adaptively choosing which measurement to perform next.</p>
+
+<h3>1.1 File Organization</h3>
+
+<table>
+    <tr>
+        <th>File</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><span class="file-ref">run_all_sim_runs.R</span></td>
+        <td>Master script that sequentially executes all simulation runs</td>
+    </tr>
+    <tr>
+        <td><span class="file-ref">R/qt_design_core.R</span></td>
+        <td>Core mathematical functions: Bloch basis, MLE, Fisher info, adaptive design</td>
+    </tr>
+    <tr>
+        <td><span class="file-ref">R/sim_params.R</span></td>
+        <td>Global simulation parameters (sample sizes, seeds, true states)</td>
+    </tr>
+    <tr>
+        <td><span class="file-ref">sim_runs_15/run_L*_*.R</span></td>
+        <td>Individual Monte Carlo studies for each (Library, Task) combination</td>
+    </tr>
+</table>
+
+<h3>1.2 Simulation Grid</h3>
+<p>The simulations sweep over:</p>
+<ul>
+    <li><strong>4 Measurement Libraries</strong>: Different sets of available measurements (L1-L4)</li>
+    <li><strong>4 Tasks/Metrics</strong>: Different loss functions for evaluating estimation quality (Frob, Bures, LogCosh, TaskObs)</li>
+    <li><strong>3 Policies</strong>: Uniform (random), Exact A-optimal, Greedy-I1 approximation</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="sec-quantum">2. Quantum Mechanical Background</h2>
+
+<h3>2.1 Density Matrices</h3>
+
+<div class="definition">
+A <strong>density matrix</strong> (or density operator) \(\rho\) describes the quantum state of a system. For an \(N\)-dimensional Hilbert space \(\mathcal{H} \cong \mathbb{C}^N\), it satisfies:
+<ol>
+    <li>\(\rho = \rho^\dagger\) (Hermitian)</li>
+    <li>\(\rho \succeq 0\) (positive semidefinite)</li>
+    <li>\(\text{Tr}(\rho) = 1\) (unit trace)</li>
+</ol>
+The set of all valid density matrices is denoted \(\mathcal{S}_N\).
+</div>
+
+<p>For a <strong>qubit</strong> (\(N=2\)), the density matrix is a \(2 \times 2\) complex Hermitian matrix with eigenvalues in \([0,1]\) summing to 1.</p>
+
+<h3>2.2 Measurements (POVMs)</h3>
+
+<div class="definition">
+A <strong>Positive Operator-Valued Measure (POVM)</strong> is a set of operators \(\{E_1, \ldots, E_r\}\) satisfying:
+<ol>
+    <li>\(E_b \succeq 0\) for all \(b\)</li>
+    <li>\(\sum_{b=1}^r E_b = I_N\)</li>
+</ol>
+A <strong>Projective-Valued Measure (PVM)</strong> is a special case where each \(E_b = Q_b\) is an orthogonal projector (\(Q_b^2 = Q_b\)).
+</div>
+
+<h3>2.3 Born Rule</h3>
+
+<div class="theorem">
+When measuring a state \(\rho\) with POVM \(\{E_b\}\), the probability of outcome \(b\) is:
+\[
+p_b = \text{Tr}(\rho E_b)
+\]
+This is the <strong>Born rule</strong>, the fundamental connection between quantum states and measurement statistics.
+</div>
+
+<p><strong>Code reference:</strong> <code>born_probs_list(rho, Q_list)</code> computes these probabilities.</p>
+
+<!-- ============================================================ -->
+<h2 id="sec-bloch">3. Bloch Vector Parametrization</h2>
+
+<h3>3.1 Generalized Gell-Mann Basis</h3>
+
+<div class="definition">
+For \(\text{SU}(N)\), we construct \(d = N^2 - 1\) traceless Hermitian matrices \(\{\sigma_1, \ldots, \sigma_d\}\) satisfying the orthonormality:
+\[
+\text{Tr}(\sigma_i \sigma_j) = 2\delta_{ij}
+\]
+For \(N=2\), these are the Pauli matrices:
+\[
+\sigma_x = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}, \quad
+\sigma_y = \begin{pmatrix} 0 & -i \\ i & 0 \end{pmatrix}, \quad
+\sigma_z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}
+\]
+</div>
+
+<p><strong>Code reference:</strong> <code>build_suN_basis(N)</code> constructs this basis following Kimura's conventions.</p>
+
+<h3>3.2 Bloch Vector Representation</h3>
+
+<div class="definition">
+Any density matrix \(\rho \in \mathcal{S}_N\) can be written as:
+<div class="equation-box">
+\[
+\rho(\theta) = \frac{I_N}{N} + \frac{1}{2} \sum_{j=1}^{d} \theta_j \sigma_j
+\]
+</div>
+where \(\theta = (\theta_1, \ldots, \theta_d)^T \in \mathbb{R}^d\) is the <strong>Bloch vector</strong>.
+</div>
+
+<p>The constraint \(\rho \succeq 0\) restricts \(\theta\) to a compact convex set called the <strong>Bloch body</strong>.</p>
+
+<div class="remark">
+For a qubit (\(N=2\), \(d=3\)), the Bloch body is the unit ball \(\|\theta\|_2 \leq 1\). Pure states lie on the boundary (Bloch sphere), mixed states in the interior.
+</div>
+
+<p><strong>Code references:</strong></p>
+<ul>
+    <li><code>rho_of_theta(theta, sigmas, N)</code>: Reconstruct \(\rho\) from \(\theta\)</li>
+    <li><code>theta_from_rho(rho, sigmas)</code>: Extract \(\theta\) from \(\rho\) via \(\theta_j = \text{Tr}(\rho \sigma_j)\)</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="sec-measurements">4. Measurements &amp; Born Probabilities</h2>
+
+<h3>4.1 Measurement Settings</h3>
+
+<p>We have a library of \(K\) measurement settings \(\mathcal{A} = \{1, \ldots, K\}\). Each setting \(a \in \mathcal{A}\) corresponds to a POVM with outcomes \(b \in \{1, \ldots, r_a\}\) and effect operators \(\{Q_{a,1}, \ldots, Q_{a,r_a}\}\).</p>
+
+<h3>4.2 Affine Probability Model</h3>
+
+<div class="theorem">
+The Born probability for outcome \(b\) given measurement \(a\) and state \(\rho(\theta)\) is:
+<div class="equation-box">
+\[
+p_{a,b}(\theta) = c_{a,b} + \frac{1}{2} \sum_{j=1}^{d} s_j^{(a,b)} \theta_j = c_{a,b} + \frac{1}{2} \mathbf{s}_{a,b}^T \theta
+\]
+</div>
+where:
+\[
+c_{a,b} = \frac{1}{N} \text{Tr}(Q_{a,b}), \qquad s_j^{(a,b)} = \text{Tr}(\sigma_j Q_{a,b})
+\]
+</div>
+
+<p>This is an <strong>affine function</strong> of \(\theta\), which is crucial for convex optimization.</p>
+
+<p><strong>Code reference:</strong> <code>build_Sab_cab(sigmas, Q_list, N, ab_df)</code> constructs the matrix \(S_{ab}\) and vector \(c_{ab}\) where each row corresponds to an \((a,b)\) pair.</p>
+
+<h3>4.3 Index Mapping</h3>
+
+<p>The codebase flattens all \((a,b)\) pairs into a single index \(m \in \{1, \ldots, M\}\) where \(M = \sum_{a=1}^K r_a\). The data frame <code>ab_df</code> maps between \((a,b)\) pairs and row indices.</p>
+
+<!-- ============================================================ -->
+<h2 id="sec-mle">5. Maximum Likelihood Estimation</h2>
+
+<h3>5.1 Data Model</h3>
+
+<p>After \(n\) measurements, let \(N_{a,b}\) denote the count of times outcome \(b\) was observed when measurement \(a\) was performed. The data is multinomial within each measurement setting.</p>
+
+<h3>5.2 Log-Likelihood</h3>
+
+<div class="definition">
+The <strong>negative log-likelihood</strong> (NLL) as a function of \(\theta\) is:
+<div class="equation-box">
+\[
+\ell(\theta) = -\sum_{(a,b)} N_{a,b} \log p_{a,b}(\theta)
+\]
+</div>
+</div>
+
+<h3>5.3 Constrained MLE via Convex Optimization</h3>
+
+<div class="algorithm">
+<strong>Constrained Maximum Likelihood Estimator:</strong>
+\[
+\hat{\theta}_{\text{MLE}} = \arg\min_{\theta \in \mathbb{R}^d} \ell(\theta) \quad \text{subject to} \quad \rho(\theta) \succeq 0
+\]
+This is a <strong>convex optimization problem</strong>:
+<ul>
+    <li>Objective: Convex (negative log of affine functions)</li>
+    <li>Constraint: Semidefinite (spectrahedral)</li>
+</ul>
+</div>
+
+<p><strong>Implementation:</strong> The code uses <code>CVXR</code> with the constraint formulated as:</p>
+\[
+A(\theta) = \text{real\_embed}(\rho(\theta)) \succeq 0
+\]
+<p>where <code>real_embed</code> converts a complex \(N \times N\) Hermitian matrix to a real \(2N \times 2N\) symmetric matrix:</p>
+\[
+\text{real\_embed}(M) = \begin{pmatrix} \text{Re}(M) & -\text{Im}(M) \\ \text{Im}(M) & \text{Re}(M) \end{pmatrix}
+\]
+
+<p><strong>Code reference:</strong> <code>fit_theta_cvxr(N, sigmas, S_ab, c_ab, Nab, solver)</code></p>
+
+<h3>5.4 Eigenvalue Floor Variant</h3>
+
+<div class="definition">
+The <strong>regularized MLE</strong> adds a minimum eigenvalue constraint:
+\[
+\hat{\theta}_{\text{MLE}}^{(\eta)} = \arg\min_{\theta} \ell(\theta) \quad \text{subject to} \quad \rho(\theta) \succeq \eta I_N
+\]
+This ensures the estimated state is strictly positive definite with eigenvalues \(\geq \eta\).
+</div>
+
+<p><strong>Code reference:</strong> <code>fit_theta_cvxr_eta(..., eta_mle)</code> with parameter <code>eta_mle</code> (default \(10^{-3}\))</p>
+
+<!-- ============================================================ -->
+<h2 id="sec-fisher">6. Fisher Information</h2>
+
+<h3>6.1 Single-Setting Fisher Information</h3>
+
+<div class="theorem">
+For measurement setting \(a\), the <strong>Fisher information matrix</strong> for a single observation is:
+<div class="equation-box">
+\[
+I_a(\theta) = \frac{1}{4} \sum_{b=1}^{r_a} \frac{\mathbf{s}_{a,b} \mathbf{s}_{a,b}^T}{p_{a,b}(\theta)}
+\]
+</div>
+where \(\mathbf{s}_{a,b} = (s_1^{(a,b)}, \ldots, s_d^{(a,b)})^T\) is the gradient of \(2p_{a,b}(\theta)\) with respect to \(\theta\).
+
+<p><em>Matrix form:</em> Let \(S_a \in \mathbb{R}^{r_a \times d}\) have rows \(\mathbf{s}_{a,b}^T\). Then:</p>
+\[
+I_a(\theta) = \frac{1}{4} S_a^T \text{diag}\left(\frac{1}{p_{a,1}}, \ldots, \frac{1}{p_{a,r_a}}\right) S_a
+\]
+</div>
+
+<p><strong>Code reference:</strong> <code>fisher_info_setting(theta, a, S_ab, c_ab, ab_df)</code></p>
+
+<h3>6.2 Total Fisher Information</h3>
+
+<div class="definition">
+Given \(n_a\) measurements at setting \(a\), the <strong>total Fisher information</strong> is:
+<div class="equation-box">
+\[
+I_{\text{total}}(\theta) = \sum_{a=1}^{K} n_a \cdot I_a(\theta)
+\]
+</div>
+</div>
+
+<p><strong>Code reference:</strong> <code>total_fisher_info(theta, counts, S_ab, c_ab, ab_df)</code></p>
+
+<h3>6.3 Asymptotic Distribution of MLE</h3>
+
+<div class="theorem">
+Under regularity conditions, as \(n \to \infty\):
+\[
+\sqrt{n}(\hat{\theta}_{\text{MLE}} - \theta_{\text{true}}) \xrightarrow{d} \mathcal{N}(0, I_{\bar{\pi}}(\theta_{\text{true}})^{-1})
+\]
+where \(\bar{\pi}\) is the limiting allocation proportion and \(I_{\bar{\pi}} = \sum_a \bar{\pi}_a I_a\).
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-design">7. Adaptive Experimental Design</h2>
+
+<h3>7.1 Problem Setup</h3>
+
+<p>At each step \(n\), we observe the current data and MLE \(\hat{\theta}^{(n)}\), then choose the next measurement setting \(a_{n+1}\). The goal is to minimize estimation error.</p>
+
+<h3>7.2 D-Optimal Design</h3>
+
+<div class="definition">
+<strong>D-optimality</strong> maximizes the determinant of the Fisher information:
+\[
+a_{n+1}^{(D)} = \arg\max_{a \in \mathcal{A}} \log\det\left(I_{\text{total}}^{(n)} + I_a(\hat{\theta}^{(n)})\right)
+\]
+This minimizes the volume of the asymptotic confidence ellipsoid.
+</div>
+
+<p><strong>Code reference:</strong> <code>select_next_setting(..., criterion="D")</code></p>
+
+<h3>7.3 A-Optimal Design (Standard)</h3>
+
+<div class="definition">
+<strong>A-optimality</strong> minimizes the trace of the inverse Fisher information:
+\[
+a_{n+1}^{(A)} = \arg\min_{a \in \mathcal{A}} \text{Tr}\left[\left(I_{\text{total}}^{(n)} + I_a(\hat{\theta}^{(n)})\right)^{-1}\right]
+\]
+This minimizes the sum of asymptotic variances of all parameters.
+</div>
+
+<p><strong>Code reference:</strong> <code>select_next_setting(..., criterion="A")</code></p>
+
+<h3>7.4 Weighted A-Optimal Design (G-Optimal)</h3>
+
+<div class="definition">
+For a task-specific positive semidefinite weight matrix \(G\), the <strong>weighted A-optimal</strong> criterion is:
+<div class="equation-box">
+\[
+a_{n+1}^{(G)} = \arg\min_{a \in \mathcal{A}} \text{Tr}\left[G \cdot \left(I_{\text{total}}^{(n)} + I_a(\hat{\theta}^{(n)})\right)^{-1}\right]
+\]
+</div>
+This minimizes the asymptotic risk under the quadratic loss \(L(\hat{\theta}, \theta) = (\hat{\theta} - \theta)^T G (\hat{\theta} - \theta)\).
+</div>
+
+<p><strong>Code reference:</strong> <code>select_next_setting_A_weighted(..., G_mat)</code></p>
+
+<h3>7.5 Greedy First-Order Approximation (GI1)</h3>
+
+<div class="definition">
+For computational efficiency, the <strong>GI1 (Greedy Information 1)</strong> approximation uses a first-order expansion:
+\[
+\text{Tr}(G (I + I_a)^{-1}) \approx \text{Tr}(G I^{-1}) - \text{Tr}(G I^{-1} I_a I^{-1})
+\]
+So the selection rule becomes:
+\[
+a_{n+1}^{(\text{GI1})} = \arg\max_{a \in \mathcal{A}} \text{Tr}\left(G \cdot I_{\text{total}}^{-1} \cdot I_a \cdot I_{\text{total}}^{-1}\right)
+\]
+</div>
+
+<p><strong>Code references:</strong></p>
+<ul>
+    <li><code>first_order_a_score(I_total, Ia, ridge)</code></li>
+    <li><code>select_next_setting_A_weighted(..., method="GI1")</code></li>
+</ul>
+
+<h3>7.6 Proxy Risk</h3>
+
+<div class="definition">
+The <strong>proxy risk</strong> at sample size \(n\) is:
+\[
+R_n(G) = \text{Tr}\left(G \cdot I_{\text{total}}^{(n)}(\theta_{\text{true}})^{-1}\right)
+\]
+This is the Cram&eacute;r-Rao lower bound on the weighted mean squared error, evaluated at the true parameter.
+</div>
+
+<p><strong>Code reference:</strong> <code>proxy_risk_A(theta_hat, counts_by_a, S_ab, c_ab, ab_df, G_mat)</code></p>
+
+<!-- ============================================================ -->
+<h2 id="sec-metrics">8. Loss Functions &amp; Metrics</h2>
+
+<p>The weight matrix \(G\) encodes which aspects of the state are most important to estimate accurately. Four choices are implemented:</p>
+
+<h3>8.1 Frobenius (Hilbert-Schmidt) Metric</h3>
+
+<div class="definition">
+The <strong>Frobenius distance</strong> between density matrices is:
+\[
+D_F(\rho, \sigma) = \|\rho - \sigma\|_F = \sqrt{\text{Tr}((\rho - \sigma)^2)}
+\]
+In Bloch coordinates:
+\[
+D_F^2(\theta, \theta') = \frac{1}{2}\|\theta - \theta'\|_2^2
+\]
+Thus:
+<div class="equation-box">
+\[
+G_{\text{Frob}} = \frac{1}{2} I_d
+\]
+</div>
+</div>
+
+<p><strong>Code reference:</strong> <code>make_metric("Frob", ...)</code></p>
+
+<h3>8.2 Bures Metric</h3>
+
+<div class="definition">
+The <strong>Bures distance</strong> is:
+\[
+D_B(\rho, \sigma) = \sqrt{2 - 2\sqrt{F(\rho, \sigma)}}
+\]
+where \(F(\rho, \sigma) = \left(\text{Tr}\sqrt{\sqrt{\rho}\sigma\sqrt{\rho}}\right)^2\) is the Uhlmann fidelity.
+
+<p>The corresponding <strong>Bures metric tensor</strong> on state space is computed by solving the Lyapunov equation:</p>
+\[
+(I_N \otimes \rho + \rho^T \otimes I_N) \text{vec}(Y_k) = 2\text{vec}(\sigma_k)
+\]
+Then:
+\[
+[G_{\text{Bures}}]_{jk} = \frac{1}{16} \text{Tr}(\sigma_j Y_k)
+\]
+</div>
+
+<p><strong>Code reference:</strong> <code>bures_metric_matrix(theta_hat, sigmas, N, params)</code></p>
+
+<h3>8.3 LogCosh (Smoothed Trace Distance)</h3>
+
+<div class="definition">
+The <strong>trace distance</strong> is:
+\[
+D_{\text{tr}}(\rho, \sigma) = \frac{1}{2}\|\rho - \sigma\|_1 = \frac{1}{2}\sum_i |\lambda_i|
+\]
+where \(\lambda_i\) are eigenvalues of \(\rho - \sigma\).
+
+<p>This is non-differentiable. The <strong>LogCosh smoothing</strong> with parameter \(\mu > 0\) is:</p>
+\[
+D_{\text{tr},\mu}(\rho, \sigma) = \frac{1}{2} \sum_i \mu \log(2\cosh(\lambda_i/\mu))
+\]
+The loss function is \(L_{\text{tr},\mu} = D_{\text{tr},\mu}^2\), and \(G_{\text{LogCosh}}\) is its Hessian at the current estimate.
+</div>
+
+<p><strong>Code reference:</strong> <code>logcosh_metric_matrix(theta_hat, sigmas, N, params)</code> with <code>mu_logcosh</code> parameter (default 0.05)</p>
+
+<h3>8.4 Task-Specific Observables</h3>
+
+<div class="definition">
+Given a set of observables \(\{O_1, \ldots, O_L\}\) to estimate, the loss is:
+\[
+L_{\text{task}}(\hat{\theta}, \theta) = \sum_{\ell=1}^L \left(\text{Tr}(O_\ell \rho(\hat{\theta})) - \text{Tr}(O_\ell \rho(\theta))\right)^2
+\]
+The weight matrix is:
+<div class="equation-box">
+\[
+G_{\text{TaskObs}} = \frac{1}{4}\sum_{\ell=1}^L \mathbf{o}_\ell \mathbf{o}_\ell^T
+\]
+</div>
+where \([\mathbf{o}_\ell]_j = \text{Tr}(\sigma_j O_\ell)\).
+</div>
+
+<p><strong>Code reference:</strong> <code>build_task_metric(obs_list, sigmas)</code></p>
+
+<p>Default observables in simulations: \(\{O_1 = \sigma_x, O_2 = \sigma_z\}\)</p>
+
+<!-- ============================================================ -->
+<h2 id="sec-libraries">9. Measurement Libraries</h2>
+
+<h3>9.1 Library 1: Pauli PVMs</h3>
+
+<div class="definition">
+Three measurement settings corresponding to the eigenbases of Pauli matrices:
+<ul>
+    <li>\(a=1\): \(\sigma_x\) eigenbasis \(\to\) projectors \(\frac{1}{2}(I \pm \sigma_x)\)</li>
+    <li>\(a=2\): \(\sigma_y\) eigenbasis \(\to\) projectors \(\frac{1}{2}(I \pm \sigma_y)\)</li>
+    <li>\(a=3\): \(\sigma_z\) eigenbasis \(\to\) projectors \(\frac{1}{2}(I \pm \sigma_z)\)</li>
+</ul>
+Each setting has \(r_a = 2\) outcomes.
+</div>
+
+<h3>9.2 Library 2: Nine-Axis PVMs</h3>
+
+<div class="definition">
+Nine PVM settings along axes:
+\[
+\pm\hat{x}, \pm\hat{y}, \pm\hat{z}, \frac{\hat{x}+\hat{y}}{\sqrt{2}}, \frac{\hat{x}+\hat{z}}{\sqrt{2}}, \frac{\hat{y}+\hat{z}}{\sqrt{2}}, \frac{\hat{x}-\hat{y}}{\sqrt{2}}, \frac{\hat{x}-\hat{z}}{\sqrt{2}}, \frac{\hat{y}-\hat{z}}{\sqrt{2}}
+\]
+For unit vector \(\mathbf{v}\), the PVM is \(\{\frac{1}{2}(I + \mathbf{v}\cdot\boldsymbol{\sigma}), \frac{1}{2}(I - \mathbf{v}\cdot\boldsymbol{\sigma})\}\).
+</div>
+
+<h3>9.3 Library 3: Pauli-6 + Tetrahedral POVM</h3>
+
+<div class="definition">
+Two measurement settings:
+<ul>
+    <li><strong>Pauli-6 POVM</strong>: 6 outcomes with effects \(\frac{1}{6}(I \pm \sigma_j)\) for \(j \in \{x,y,z\}\)</li>
+    <li><strong>Tetrahedral POVM (SIC-like)</strong>: 4 outcomes along tetrahedral vertices:
+    \[
+    \mathbf{v}_1 = \frac{1}{\sqrt{3}}(1,1,1), \; \mathbf{v}_2 = \frac{1}{\sqrt{3}}(1,-1,-1), \; \mathbf{v}_3 = \frac{1}{\sqrt{3}}(-1,1,-1), \; \mathbf{v}_4 = \frac{1}{\sqrt{3}}(-1,-1,1)
+    \]
+    Effects: \(E_k = \frac{1}{4}(I + \mathbf{v}_k \cdot \boldsymbol{\sigma})\)</li>
+</ul>
+</div>
+
+<h3>9.4 Library 4: Random PVMs</h3>
+
+<div class="definition">
+Four PVM settings with axes drawn uniformly at random from the unit sphere (using seed <code>seed_lib4 = 2025</code> for reproducibility).
+</div>
+
+<p><strong>Code reference:</strong> <code>make_measurement_library(lib_id, N, sigmas, seed_lib4)</code></p>
+
+<!-- ============================================================ -->
+<h2 id="sec-simulation">10. Simulation Framework</h2>
+
+<h3>10.1 Monte Carlo Study Structure</h3>
+
+<div class="algorithm">
+<strong>run_mc_study(lib_id, task_id, params):</strong>
+<ol>
+    <li>Build measurement library and metric</li>
+    <li>For each of \(R\) Monte Carlo replications:
+        <ul>
+            <li>Generate true state (fixed or random)</li>
+            <li>For each policy in {Exact, GI1, Uniform}:
+                <ul>
+                    <li>Run \(n_{\text{total}}\) sequential measurements</li>
+                    <li>Update MLE every <code>refit_every</code> steps</li>
+                    <li>Record proxy risk at each step</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>Aggregate results: mean risk vs. sample size by policy</li>
+</ol>
+</div>
+
+<h3>10.2 Key Parameters</h3>
+
+<table>
+    <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+    <tr><td>\(N\)</td><td>2</td><td>Hilbert space dimension (qubit)</td></tr>
+    <tr><td>\(d\)</td><td>3</td><td>Bloch vector dimension (\(N^2-1\))</td></tr>
+    <tr><td><code>n_total</code></td><td>50</td><td>Total measurements per replication</td></tr>
+    <tr><td><code>mc_reps</code></td><td>100</td><td>Number of Monte Carlo replications</td></tr>
+    <tr><td><code>n_init</code></td><td>10</td><td>Initial random measurements before adaptive</td></tr>
+    <tr><td><code>refit_every</code></td><td>1</td><td>MLE update frequency</td></tr>
+    <tr><td><code>eta_mle</code></td><td>\(10^{-3}\)</td><td>Minimum eigenvalue for MLE</td></tr>
+    <tr><td><code>mu_logcosh</code></td><td>0.05</td><td>Smoothing parameter for LogCosh metric</td></tr>
+    <tr><td>\(\theta_{\text{true}}\)</td><td>\((0.35, -0.25, 0.40)\)</td><td>True Bloch vector (when fixed)</td></tr>
+</table>
+
+<h3>10.3 Output Files</h3>
+
+<p>For each (Library, Task) combination, saved to <code>results/lib{L}_{Task}/</code>:</p>
+<ul>
+    <li><code>summary.csv</code>: Mean risk by (n, policy)</li>
+    <li><code>raw.rds</code>: Full trajectory data for all replications</li>
+    <li><code>proxy_risk.png</code>: Risk vs. sample size plot</li>
+    <li><code>proxy_risk_rescaled.png</code>: \(n \cdot R_n(G)\) vs. sample size</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="sec-functions">11. Function Reference</h2>
+
+<h3>11.1 Basis Construction</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>build_suN_basis(N)</code></td>
+        <td>Generalized Gell-Mann matrices \(\{\sigma_j\}\) for SU(N)</td>
+    </tr>
+    <tr>
+        <td><code>spectral_projectors(B)</code></td>
+        <td>Eigenprojectors \(\{Q_b\}\) and eigenvalues of Hermitian \(B\)</td>
+    </tr>
+    <tr>
+        <td><code>build_measurements_from_basis(sigmas)</code></td>
+        <td>PVMs from measuring each \(\sigma_j\)</td>
+    </tr>
+</table>
+
+<h3>11.2 State Manipulation</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>rho_of_theta(theta, sigmas, N)</code></td>
+        <td>\(\rho(\theta) = \frac{I}{N} + \frac{1}{2}\sum_j \theta_j \sigma_j\)</td>
+    </tr>
+    <tr>
+        <td><code>theta_from_rho(rho, sigmas)</code></td>
+        <td>\(\theta_j = \text{Tr}(\rho \sigma_j)\)</td>
+    </tr>
+    <tr>
+        <td><code>random_density(N, seed)</code></td>
+        <td>Random density matrix via Wishart: \(\rho = XX^\dagger / \text{Tr}(XX^\dagger)\)</td>
+    </tr>
+    <tr>
+        <td><code>apply_eig_floor(rho, eta)</code></td>
+        <td>Project eigenvalues to \(\geq \eta\) and renormalize</td>
+    </tr>
+</table>
+
+<h3>11.3 Probabilities</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>born_probs_list(rho, Q_list)</code></td>
+        <td>\(p_{a,b} = \text{Tr}(\rho Q_{a,b})\) for all \((a,b)\)</td>
+    </tr>
+    <tr>
+        <td><code>build_Sab_cab(sigmas, Q_list, N, ab_df)</code></td>
+        <td>Affine model coefficients \(S_{ab}, c_{ab}\)</td>
+    </tr>
+</table>
+
+<h3>11.4 Estimation</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>fit_theta_cvxr(...)</code></td>
+        <td>Constrained MLE: \(\min_\theta -\sum N_{ab}\log p_{ab}(\theta)\) s.t. \(\rho(\theta) \succeq 0\)</td>
+    </tr>
+    <tr>
+        <td><code>fit_theta_cvxr_eta(..., eta_mle)</code></td>
+        <td>Regularized MLE with \(\rho(\theta) \succeq \eta I\)</td>
+    </tr>
+    <tr>
+        <td><code>nll_numeric(theta, ...)</code></td>
+        <td>Evaluate NLL for diagnostics</td>
+    </tr>
+</table>
+
+<h3>11.5 Fisher Information</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>fisher_info_setting(theta, a, ...)</code></td>
+        <td>\(I_a(\theta) = \frac{1}{4} S_a^T \text{diag}(1/p_{a,\cdot}) S_a\)</td>
+    </tr>
+    <tr>
+        <td><code>fisher_info_by_setting(theta, ...)</code></td>
+        <td>List of \(I_a(\theta)\) for all \(a\)</td>
+    </tr>
+    <tr>
+        <td><code>total_fisher_info(theta, counts, ...)</code></td>
+        <td>\(I_{\text{total}} = \sum_a n_a I_a(\theta)\)</td>
+    </tr>
+</table>
+
+<h3>11.6 Design Selection</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>select_next_setting(..., criterion)</code></td>
+        <td>D or A-optimal next measurement</td>
+    </tr>
+    <tr>
+        <td><code>select_next_setting_A_weighted(..., G_mat)</code></td>
+        <td>Weighted A-optimal with metric \(G\)</td>
+    </tr>
+    <tr>
+        <td><code>first_order_d_score(I_total, Ia)</code></td>
+        <td>\(\text{Tr}(I_{\text{total}}^{-1} I_a)\) (D-optimal first-order)</td>
+    </tr>
+    <tr>
+        <td><code>first_order_a_score(I_total, Ia)</code></td>
+        <td>\(\text{Tr}(I_{\text{total}}^{-1} I_a I_{\text{total}}^{-1})\) (A-optimal first-order)</td>
+    </tr>
+</table>
+
+<h3>11.7 Metrics</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Computes</th>
+    </tr>
+    <tr>
+        <td><code>make_metric(task_id, ...)</code></td>
+        <td>Returns \(G(\theta)\) function for given task</td>
+    </tr>
+    <tr>
+        <td><code>bures_metric_matrix(theta_hat, ...)</code></td>
+        <td>Bures metric tensor via Lyapunov equation</td>
+    </tr>
+    <tr>
+        <td><code>logcosh_metric_matrix(theta_hat, ...)</code></td>
+        <td>Hessian of smoothed trace distance</td>
+    </tr>
+    <tr>
+        <td><code>build_task_metric(obs_list, sigmas)</code></td>
+        <td>\(G = \frac{1}{4}\sum_\ell \mathbf{o}_\ell \mathbf{o}_\ell^T\)</td>
+    </tr>
+</table>
+
+<h3>11.8 Simulation</h3>
+
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>run_one_rep(policy, n_total, ...)</code></td>
+        <td>Single replication of sequential design</td>
+    </tr>
+    <tr>
+        <td><code>run_mc_study(lib_id, task_id, params)</code></td>
+        <td>Full Monte Carlo study</td>
+    </tr>
+    <tr>
+        <td><code>make_measurement_library(lib_id, ...)</code></td>
+        <td>Construct measurement library L1-L4</td>
+    </tr>
+    <tr>
+        <td><code>proxy_risk_A(theta_hat, ...)</code></td>
+        <td>\(\text{Tr}(G \cdot I_{\text{total}}^{-1})\)</td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>Summary of Key Formulas</h2>
+
+<div class="equation-box">
+<strong>Bloch Representation:</strong>
+\[
+\rho(\theta) = \frac{I_N}{N} + \frac{1}{2} \sum_{j=1}^{d} \theta_j \sigma_j
+\]
+</div>
+
+<div class="equation-box">
+<strong>Born Rule (Affine Form):</strong>
+\[
+p_{a,b}(\theta) = c_{a,b} + \frac{1}{2} \mathbf{s}_{a,b}^T \theta
+\]
+</div>
+
+<div class="equation-box">
+<strong>MLE Objective:</strong>
+\[
+\hat{\theta} = \arg\min_{\theta:\rho(\theta)\succeq 0} \left\{ -\sum_{a,b} N_{a,b} \log p_{a,b}(\theta) \right\}
+\]
+</div>
+
+<div class="equation-box">
+<strong>Fisher Information:</strong>
+\[
+I_a(\theta) = \frac{1}{4} \sum_{b} \frac{\mathbf{s}_{a,b} \mathbf{s}_{a,b}^T}{p_{a,b}(\theta)}
+\]
+</div>
+
+<div class="equation-box">
+<strong>Weighted A-Optimal Selection:</strong>
+\[
+a^* = \arg\min_{a} \text{Tr}\left(G \cdot (I_{\text{total}} + I_a)^{-1}\right)
+\]
+</div>
+
+<div class="equation-box">
+<strong>Proxy Risk:</strong>
+\[
+R_n(G) = \text{Tr}\left(G \cdot I_{\text{total}}^{-1}\right)
+\]
+</div>
+
+<hr>
+<p><em>Generated for the Quantum_Xiaxuan codebase. Last updated: January 2026.</em></p>
+
+</body>
+</html>
